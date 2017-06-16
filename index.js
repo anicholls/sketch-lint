@@ -1,9 +1,18 @@
 const fs = require('fs');
 const JSZip = require('jszip');
 
+var schema;
+var errors = [];
+
+fs.readFile('schema.json', (err, data) => {
+  if (err) throw err;
+
+  schema = JSON.parse(data);
+});
+
 fs.readFile('sketch-file.sketch', (err, data) => {
   if (err) throw err;
-  JSZip.loadAsync(data).then((zip) => {
+  JSZip.loadAsync(data).then(zip => {
 
     // read the top level page
     // hardcoding page because im lazy ;)
@@ -11,29 +20,74 @@ fs.readFile('sketch-file.sketch', (err, data) => {
 
     zip.file(pagePath)
       .async('string')
-      .then(function(str) {
+      .then(str => {
         const json = JSON.parse(str);
         const jsonStr = JSON.stringify(json, null, 2);
 
-        let artboards = json.layers;
-
-        for (var artboard of artboards) {
-
-          console.log(artboard.name);
-          let layers = artboard.layers;
-
-          for (var layer of layers) {
-            console.log(layer.name);
-          }
-        }
+        checkPage(json.layers);
 
         fs.writeFile("sketch.json", jsonStr, (err) => {
           if (err) {
             return console.log(err);
           }
-
-          console.log("The file was saved!");
         });
+
+        reportErrors();
+      })
+      .catch(err => {
+        console.log(err);
       });
   });
 });
+
+function checkPage(artboards) {
+  for (var artboard of artboards) {
+
+    if (!validateFormat(schema.artboard, artboard.name)) {
+      errors.push({
+        type: 'artboard',
+        name: artboard.name
+      });
+    }
+
+    for (var layer of artboard.layers) {
+      if (!validateFormat(schema.layer, layer.name)) {
+        errors.push({
+          type: 'layer',
+          name: layer.name
+        });
+      }
+    }
+  }
+}
+
+function validateFormat(formats, name) {
+  let validated = false;
+
+  for (var format of formats) {
+    var pattern = new RegExp(format, "g");
+    if (pattern.test(name)) {
+      validated = true;
+    }
+  }
+
+  return validated;
+}
+
+function reportErrors() {
+  console.log('There were a total of ' + errors.length + ' errors:\n');
+
+  for (var error of errors) {
+    let typeSchema;
+
+    if (error.type == 'artboard') {
+      typeSchema = schema.artboard;
+    }
+    if (error.type == 'layer') {
+      typeSchema = schema.layer;
+    }
+
+    console.log('Incorrect ' + error.type + ' name: "' + error.name + '"');
+    console.log('Expected format(s): "' + typeSchema.join('", "') + '"\n');
+  }
+}
