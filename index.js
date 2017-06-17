@@ -3,6 +3,7 @@ const JSZip = require('jszip');
 
 var schema;
 var errors = [];
+var instances = {};
 
 fs.readFile('schema.json', (err, data) => {
   if (err) throw err;
@@ -43,31 +44,71 @@ fs.readFile('sketch-file.sketch', (err, data) => {
 function checkPage(artboards) {
   for (var artboard of artboards) {
 
-    if (!validateFormat(schema.artboard, artboard.name)) {
+    if (!validateArtboard(schema.artboard, artboard.name)) {
       errors.push({
-        type: 'artboard',
-        name: artboard.name
+        class: 'artboard',
+        type: 'name',
+        artboard: artboard.name
       });
     }
 
     for (var layer of artboard.layers) {
-      if (!validateFormat(schema.layer, layer.name)) {
+      if (!validateLayer(layer)) {
         errors.push({
-          type: 'layer',
+          class: 'layer',
+          type: 'name',
+          artboard: artboard.name,
           name: layer.name
+        });
+      }
+    }
+
+    for (var layerSchema of schema.layers) {
+      let count = instances[layerSchema.pattern].length || 0;
+
+      if (layerSchema.count &&
+          layerSchema.count != count) {
+        errors.push({
+          class: 'layer',
+          type: 'count',
+          artboard: artboard.name,
+          name: layerSchema.pattern,
+          expectedCount: layerSchema.count,
+          count: count,
         });
       }
     }
   }
 }
 
-function validateFormat(formats, name) {
+function validateArtboard(patterns, name) {
   let validated = false;
 
-  for (var format of formats) {
-    var pattern = new RegExp(format, "g");
-    if (pattern.test(name)) {
+  for (var pattern of patterns) {
+    var regex = new RegExp(pattern, "g");
+    if (regex.test(name)) {
       validated = true;
+    }
+  }
+
+  return validated;
+}
+
+function validateLayer(layer) {
+  let validated = false;
+
+  for (var layerSchema of schema.layers) {
+    var pattern = new RegExp(layerSchema.pattern, "g");
+
+    if (pattern.test(layer.name)) {
+      validated = true;
+
+      if (instances[pattern]) {
+        instances[layerSchema.pattern].push(layer.name);
+      }
+      else {
+        instances[layerSchema.pattern] = [layer.name];
+      }
     }
   }
 
@@ -77,17 +118,32 @@ function validateFormat(formats, name) {
 function reportErrors() {
   console.log('There were a total of ' + errors.length + ' errors:\n');
 
+  let layerPatterns = [];
+  for (var layerSchema of schema.layers) {
+    layerPatterns.push(layerSchema.pattern);
+  }
+
+  // TODO: Sort by type before printing. For layer errors, sort by artboard
+
   for (var error of errors) {
-    let typeSchema;
+    let schemaClass;
 
-    if (error.type == 'artboard') {
-      typeSchema = schema.artboard;
-    }
-    if (error.type == 'layer') {
-      typeSchema = schema.layer;
+    if (error.class == 'layer') {
+      schemaClass = schema.layers;
     }
 
-    console.log('Incorrect ' + error.type + ' name: "' + error.name + '"');
-    console.log('Expected format(s): "' + typeSchema.join('", "') + '"\n');
+    if (error.class == 'artboard' && error.type == 'name') {
+      console.log('Incorrect artboard name: "' + error.artboard + '"');
+      console.log('Expected format(s): "' + schema.artboard.join('", "') + '"\n');
+    }
+    else if (error.class == 'layer' && error.type == 'name') {
+      console.log('Incorrect layer name: "' + error.name + '" in artboard: "' + error.artboard + '"');
+      console.log('Expected format(s): "' + layerPatterns.join('", "') + '"\n');
+    }
+    else if (error.type == 'count') {
+      console.log('The count of the pattern "' + error.name + '" did not match the spec.');
+      console.log('Found: ' + error.count);
+      console.log('Expected: ' + error.expectedCount + '\n');
+    }
   }
 }
