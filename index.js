@@ -2,7 +2,8 @@ const fs = require('fs');
 const JSZip = require('jszip');
 
 var schema;
-var errors = [];
+var pages = [];
+var errors = {};
 var instances = {};
 
 fs.readFile('schema.json', (err, data) => {
@@ -11,7 +12,9 @@ fs.readFile('schema.json', (err, data) => {
   schema = JSON.parse(data);
 });
 
-fs.readFile('sketch-file.sketch', (err, data) => {
+console.log('Linting file: "' + 'system-icons.sketch' + '"\n');
+
+fs.readFile('system-icons.sketch', (err, data) => {
   if (err) throw err;
   JSZip.loadAsync(data).then(zip => {
 
@@ -19,13 +22,34 @@ fs.readFile('sketch-file.sketch', (err, data) => {
     // hardcoding page because im lazy ;)
     const pagePath = Object.keys(zip.files)[1];
 
-    zip.file(pagePath)
+    for (var file of Object.keys(zip.files)) {
+      if (file.indexOf('page') == 0) {
+        pages.push(file);
+      }
+    }
+
+    for (var page of pages) {
+      parsePageFile(zip, page);
+    }
+  });
+});
+
+function parsePageFile(zip, pagePath) {
+  zip.file(pagePath)
       .async('string')
       .then(str => {
         const json = JSON.parse(str);
         const jsonStr = JSON.stringify(json, null, 2);
 
-        checkPage(json.layers);
+        let pageName = json.name;
+
+        if (pageName == 'Symbols') {
+          return;
+        }
+
+        errors[pageName] = [];
+
+        checkPage(pageName, json.layers);
 
         fs.writeFile("sketch.json", jsonStr, (err) => {
           if (err) {
@@ -33,19 +57,18 @@ fs.readFile('sketch-file.sketch', (err, data) => {
           }
         });
 
-        reportErrors();
+        reportErrors(pageName);
       })
       .catch(err => {
         console.log(err);
       });
-  });
-});
+}
 
-function checkPage(artboards) {
+function checkPage(pageName, artboards) {
   for (var artboard of artboards) {
 
     if (!validateArtboard(schema.artboard, artboard.name)) {
-      errors.push({
+      errors[pageName].push({
         class: 'artboard',
         type: 'name',
         artboard: artboard.name
@@ -54,7 +77,7 @@ function checkPage(artboards) {
 
     for (var layer of artboard.layers) {
       if (!validateLayer(layer)) {
-        errors.push({
+        errors[pageName].push({
           class: 'layer',
           type: 'name',
           artboard: artboard.name,
@@ -64,18 +87,20 @@ function checkPage(artboards) {
     }
 
     for (var layerSchema of schema.layers) {
-      let count = instances[layerSchema.pattern].length || 0;
+      if (instances[layerSchema.pattern]) {
+        let count = instances[layerSchema.pattern].length || 0;
 
-      if (layerSchema.count &&
-          layerSchema.count != count) {
-        errors.push({
-          class: 'layer',
-          type: 'count',
-          artboard: artboard.name,
-          name: layerSchema.pattern,
-          expectedCount: layerSchema.count,
-          count: count,
-        });
+        if (layerSchema.count &&
+            layerSchema.count != count) {
+          errors[pageName].push({
+            class: 'layer',
+            type: 'count',
+            artboard: artboard.name,
+            name: layerSchema.pattern,
+            expectedCount: layerSchema.count,
+            count: count,
+          });
+        }
       }
     }
   }
@@ -115,8 +140,13 @@ function validateLayer(layer) {
   return validated;
 }
 
-function reportErrors() {
-  console.log('There were a total of ' + errors.length + ' errors:\n');
+function reportErrors(pageName) {
+  if (!errors[pageName].length) {
+    return;
+  }
+
+  console.log('-----------------------\n');
+  console.log('There were a total of ' + errors[pageName].length + ' errors for page "' + pageName + '":\n');
 
   let layerPatterns = [];
   for (var layerSchema of schema.layers) {
@@ -125,7 +155,7 @@ function reportErrors() {
 
   // TODO: Sort by type before printing. For layer errors, sort by artboard
 
-  for (var error of errors) {
+  for (var error of errors[pageName]) {
     let schemaClass;
 
     if (error.class == 'layer') {
