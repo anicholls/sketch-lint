@@ -14,7 +14,7 @@ function parseSketch(schemaJson, result) {
     let page = pages[id];
 
     if (page.name == 'Symbols') {
-      return;
+      continue;
     }
 
     errors[page.name] = [];

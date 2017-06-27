@@ -16,7 +16,7 @@ function handleFiles(schema, input) {
     console.log('Linting file: "' + input + '"\n');
 
     sketch2json(data)
-      .then(parseSketch.bind(this, schema))
+      .then(parseSketch.bind(data, schema))
       .then(exportJson)
       .catch(err => {
         console.log(err);
