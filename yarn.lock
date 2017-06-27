@@ -2,6 +2,20 @@
 # yarn lockfile v1
 
 
+array-back@^1.0.3, array-back@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/array-back/-/array-back-1.0.4.tgz#644ba7f095f7ffcf7c43b5f0dc39d3c1f03c063b"
+  dependencies:
+    typical "^2.6.0"
+
+command-line-args@^4.0.6:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/command-line-args/-/command-line-args-4.0.6.tgz#0ff87a1dd159890dcaeb2a005abdae71e55059fc"
+  dependencies:
+    array-back "^1.0.4"
+    find-replace "^1.0.3"
+    typical "^2.6.1"
+
 core-js@~2.3.0:
   version "2.3.0"
   resolved "https://artifactory.workday.com/artifactory/api/npm/npm-virtual/core-js/-/core-js-2.3.0.tgz#fab83fbb0b2d8dc85fa636c4b9d34c75420c6d65"
@@ -14,7 +28,14 @@ es6-promise@~3.0.2:
   version "3.0.2"
   resolved "https://artifactory.workday.com/artifactory/api/npm/npm-virtual/es6-promise/-/es6-promise-3.0.2.tgz#010d5858423a5f118979665f46486a95c6ee2bb6"
 
-folktale@^2.0.0-alpha2, folktale@^2.0.0-alpha3:
+find-replace@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/find-replace/-/find-replace-1.0.3.tgz#b88e7364d2d9c959559f388c66670d6130441fa0"
+  dependencies:
+    array-back "^1.0.4"
+    test-value "^2.1.0"
+
+folktale@^2.0.0-alpha3:
   version "2.0.0-alpha3"
   resolved "https://registry.yarnpkg.com/folktale/-/folktale-2.0.0-alpha3.tgz#45f51feb486f00aa3d1d6f0f51eb45406c344899"
 
@@ -89,6 +110,17 @@ sketch2json@^0.1.0:
 string_decoder@~0.10.x:
   version "0.10.31"
   resolved "https://artifactory.workday.com/artifactory/api/npm/npm-virtual/string_decoder/-/string_decoder-0.10.31.tgz#62e203bc41766c6c28c9fc84301dab1c5310fa94"
+
+test-value@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/test-value/-/test-value-2.1.0.tgz#11da6ff670f3471a73b625ca4f3fdcf7bb748291"
+  dependencies:
+    array-back "^1.0.3"
+    typical "^2.6.0"
+
+typical@^2.6.0, typical@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/typical/-/typical-2.6.1.tgz#5c080e5d661cbbe38259d2e70a3c7253e873881d"
 
 util-deprecate@~1.0.1:
   version "1.0.2"
