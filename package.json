@@ -16,7 +16,7 @@
     "url": "https://github.com/anicholls/sketch-lint/issues"
   },
   "homepage": "https://github.com/anicholls/sketch-lint#readme",
-  "devDependencies": {
+  "dependencies": {
     "fs": "0.0.1-security",
     "jszip": "^3.1.3"
   }
