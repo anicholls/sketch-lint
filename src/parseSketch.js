@@ -62,6 +62,14 @@ function validateSketchObject(obj, schemas, stack) {
   // Copy stack for local use
   let localStack = JSON.parse(JSON.stringify(stack));
 
+  // If none of the schema's have a `pattern` key, don't check names
+  let checkName = schemas.some((o) => {
+    return 'pattern' in o;
+  });
+  let nameValidated = !checkName;
+
+  // TODO: Add support for schema.pattern to be string OR list
+
   for (let schema of schemas) {
 
     // If it passes this check, the obj has the right class
@@ -70,9 +78,11 @@ function validateSketchObject(obj, schemas, stack) {
     }
 
     // If it passes this check, the obj name matches the pattern
-    if (schema.pattern) {
+    if (checkName && schema.pattern) {
       let regex = new RegExp(schema.pattern, "g");
-      if (!regex.test(obj.name)) {
+      if (regex.test(obj.name)) {
+        nameValidated = true;
+      } else {
         continue;
       }
     }
@@ -85,7 +95,6 @@ function validateSketchObject(obj, schemas, stack) {
       objOutput['name'] = obj.name;
       objOutput['properties'] = [];
       objOutput['properties'] = parseProperties(obj, schema.output);
-      console.log(objOutput);
       output.push(objOutput);
     }
 
@@ -101,6 +110,16 @@ function validateSketchObject(obj, schemas, stack) {
         validateSketchObject(layer, schema.layers, localStack);
       }
     }
+  }
+
+  if (!nameValidated) {
+    let patterns = [];
+    for (let schema of schemas) {
+      patterns.push(schema.pattern);
+    }
+    console.log('Incorrect ' + obj['_class'] + ' name: "' + obj.name +
+        '" in artboard: "' + stack.artboard + '"');
+    console.log('Expected format(s): "' + patterns.join('", "') + '"\n');
   }
 }
 
