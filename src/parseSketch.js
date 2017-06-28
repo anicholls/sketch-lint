@@ -90,11 +90,13 @@ function validateSketchObject(obj, schemas, stack) {
     //how to handle count?
 
     if (schema.output) {
-      let objOutput = JSON.parse(JSON.stringify(localStack));
-
-      objOutput['name'] = obj.name;
-      objOutput['properties'] = [];
-      objOutput['properties'] = parseProperties(obj, schema.output);
+      // Copy stack for use in output
+      let objOutput = {
+        page: localStack.pageName,
+        layerPath: localStack.layerPath,
+        name: obj.name,
+        properties: parseProperties(obj, schema.output)
+      }
       output.push(objOutput);
     }
 
@@ -112,6 +114,7 @@ function validateSketchObject(obj, schemas, stack) {
     }
   }
 
+  // TODO: Separate errors by page
   if (!nameValidated) {
     let patterns = [];
     for (let schema of schemas) {
