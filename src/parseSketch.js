@@ -5,6 +5,7 @@ var schema;
 var pages = [];
 var errors = {};
 var instances = {};
+var output = [];
 
 function parseSketch(schemaJson, result) {
   schema = schemaJson;
@@ -21,7 +22,16 @@ function parseSketch(schemaJson, result) {
 
     checkPage(page.name, page.layers);
 
-    reportErrors(page.name);
+
+    const outputJson = JSON.stringify(output, null, 2);
+
+    fs.writeFile("output.json", outputJson, (err) => {
+      if (err) {
+        return console.log(err);
+      }
+    });
+
+    //reportErrors(page.name);
   }
 
   return result;
@@ -30,115 +40,80 @@ function parseSketch(schemaJson, result) {
 function checkPage(pageName, artboards) {
   for (var artboard of artboards) {
 
-    if (!validateArtboard(schema.artboard, artboard.name)) {
-      errors[pageName].push({
-        class: 'artboard',
-        type: 'name',
-        artboard: artboard.name
-      });
+    var stack = {
+      page: pageName,
+      layerPath: []
     }
 
-    for (var layer of artboard.layers) {
-      if (!validateLayer(layer)) {
-        errors[pageName].push({
-          class: 'layer',
-          type: 'name',
-          artboard: artboard.name,
-          name: layer.name
-        });
-      }
-    }
-
-    for (var layerSchema of schema.layers) {
-      if (instances[layerSchema.pattern]) {
-        let count = instances[layerSchema.pattern].length || 0;
-
-        if (layerSchema.count &&
-            layerSchema.count != count) {
-          errors[pageName].push({
-            class: 'layer',
-            type: 'count',
-            artboard: artboard.name,
-            name: layerSchema.pattern,
-            expectedCount: layerSchema.count,
-            count: count,
-          });
-        }
-      }
-    }
+    validateSketchObject(artboard, schema.hierarchy, stack);
   }
 }
 
-function validateArtboard(patterns, name) {
-  let validated = false;
-
-  for (var pattern of patterns) {
-    var regex = new RegExp(pattern, "g");
-    if (regex.test(name)) {
-      validated = true;
-    }
-  }
-
-  return validated;
-}
-
-function validateLayer(layer) {
-  let validated = false;
-
-  for (var layerSchema of schema.layers) {
-    var pattern = new RegExp(layerSchema.pattern, "g");
-
-    if (pattern.test(layer.name)) {
-      validated = true;
-
-      if (instances[pattern]) {
-        instances[layerSchema.pattern].push(layer.name);
-      }
-      else {
-        instances[layerSchema.pattern] = [layer.name];
-      }
-    }
-  }
-
-  return validated;
-}
-
-function reportErrors(pageName) {
-  if (!errors[pageName].length) {
+/*
+ * Takes an object and compares it to an array of possible schemas.
+ * When it finds a match, it continues to traverse down the tree.
+ * If it doesn't find a match, an error is recorded.
+ */
+function validateSketchObject(obj, schemas, stack) {
+  if (obj.name == 'meta') {
     return;
   }
 
-  console.log('-----------------------\n');
-  console.log('There were a total of ' + errors[pageName].length + ' errors for page "' + pageName + '":\n');
+  // Copy stack for local use
+  let localStack = JSON.parse(JSON.stringify(stack));
 
-  let layerPatterns = [];
-  for (var layerSchema of schema.layers) {
-    layerPatterns.push(layerSchema.pattern);
+  for (let schema of schemas) {
+
+    // If it passes this check, the obj has the right class
+    if (schema.class && obj['_class'] != schema.class) {
+      continue;
+    }
+
+    // If it passes this check, the obj name matches the pattern
+    if (schema.pattern) {
+      let regex = new RegExp(schema.pattern, "g");
+      if (!regex.test(obj.name)) {
+        continue;
+      }
+    }
+
+    //how to handle count?
+
+    if (schema.output) {
+      let objOutput = JSON.parse(JSON.stringify(localStack));
+
+      objOutput['name'] = obj.name;
+      objOutput['properties'] = [];
+      objOutput['properties'] = parseProperties(obj, schema.output);
+      console.log(objOutput);
+      output.push(objOutput);
+    }
+
+    // Add the object to the stack
+    if (obj['_class'] == 'artboard' && !localStack.artboard) {
+      localStack['artboard'] = obj.name;
+    } else {
+      localStack['layerPath'].push(obj.name);
+    }
+
+    if (obj.layers && schema.layers) {
+      for (let layer of obj.layers) {
+        validateSketchObject(layer, schema.layers, localStack);
+      }
+    }
   }
+}
 
-  // TODO: Sort by type before printing. For layer errors, sort by artboard
-
-  for (var error of errors[pageName]) {
-    let schemaClass;
-
-    if (error.class == 'layer') {
-      schemaClass = schema.layers;
-    }
-
-    if (error.class == 'artboard' && error.type == 'name') {
-      console.log('Incorrect artboard name: "' + error.artboard + '"');
-      console.log('Expected format(s): "' + schema.artboard.join('", "') + '"\n');
-    }
-    else if (error.class == 'layer' && error.type == 'name') {
-      console.log('Incorrect layer name: "' + error.name + '" in artboard: "' + error.artboard + '"');
-      console.log('Expected format(s): "' + layerPatterns.join('", "') + '"\n');
-    }
-    else if (error.type == 'count') {
-      console.log('The count of the pattern "' + error.name + '" did not match the spec.');
-      console.log('Found: ' + error.count);
-      console.log('Expected: ' + error.expectedCount + '\n');
+function parseProperties(obj, properties) {
+  let objOutput = {};
+  for (let property of properties) {
+    if (property == 'fills.color') {
+      let color = obj.style.fills[0].color;
+      delete color['_class'];
+      objOutput[property] = obj.style.fills[0].color;
     }
   }
+  return objOutput;
 }
 
 module.exports = parseSketch;
