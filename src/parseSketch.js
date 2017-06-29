@@ -29,6 +29,9 @@ function parseSketch(schemaJson, result) {
       if (err) {
         return console.log(err);
       }
+      else {
+        console.log('Property output saved to "output.json"');
+      }
     });
 
     //reportErrors(page.name);
@@ -42,10 +45,20 @@ function checkPage(pageName, artboards) {
 
     var stack = {
       page: pageName,
-      layerPath: []
+      layerPath: [],
+      counts: {}
     }
 
-    validateSketchObject(artboard, schema.hierarchy, stack);
+    stack = validateSketchObject(artboard, schema.hierarchy, stack);
+
+    for (let pattern in stack.counts) {
+      let count = stack.counts[pattern];
+      if (count.value != count.expected) {
+        console.log('Invalid count for: "' + pattern + '" in artboard: "' + artboard.name + '"');
+        console.log('Found: ' + count.value);
+        console.log('Expected: ' + count.expected + '\n');
+      }
+    }
   }
 }
 
@@ -87,7 +100,17 @@ function validateSketchObject(obj, schemas, stack) {
       }
     }
 
-    //how to handle count?
+    // Need a pattern to track the count
+    if (schema.pattern && schema.count) {
+      if (stack.counts[schema.pattern]) {
+        stack.counts[schema.pattern].value++;
+      } else {
+        stack.counts[schema.pattern] = {
+          expected: schema.count,
+          value: 1
+        };
+      }
+    }
 
     if (schema.output) {
       // Copy stack for use in output
@@ -109,7 +132,10 @@ function validateSketchObject(obj, schemas, stack) {
 
     if (obj.layers && schema.layers) {
       for (let layer of obj.layers) {
-        validateSketchObject(layer, schema.layers, localStack);
+        let childStack = validateSketchObject(layer, schema.layers, localStack);
+
+        // Get the updated count values from the recursive call and combine them into one object
+        localStack.counts = Object.assign({}, localStack.counts, childStack.counts);
       }
     }
   }
@@ -124,6 +150,8 @@ function validateSketchObject(obj, schemas, stack) {
         '" in artboard: "' + stack.artboard + '"');
     console.log('Expected format(s): "' + patterns.join('", "') + '"\n');
   }
+
+  return localStack;
 }
 
 function parseProperties(obj, properties) {

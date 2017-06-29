@@ -1,0 +1,47 @@
+{
+  "outputLocation": "./output.json",
+  "hierarchy": [
+    {
+      "class": "artboard",
+      "layers": [
+        {
+          "class": "group",
+          "pattern": "^\\w+(-\\w+)*$",
+          "count": "1",
+          "layers": [
+            {
+              "pattern": "^100$",
+              "count": "1",
+              "output": ["fills.color"]
+            },
+            {
+              "pattern": "^test-pattern$",
+              "count": "1",
+              "output": ["fills.color"]
+            },
+            {
+              "pattern": "^300$",
+              "count": "1",
+              "output": ["fills.color"]
+            },
+            {
+              "pattern": "^400$",
+              "count": "1",
+              "output": ["fills.color"]
+            },
+            {
+              "pattern": "^500$",
+              "count": "1",
+              "output": ["fills.color"]
+            },
+            {
+              "pattern": "^600$",
+              "count": "1",
+              "output": ["fills.color"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
