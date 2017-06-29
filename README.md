@@ -39,3 +39,146 @@ The `hierarchy` is made out of identical objects that can have the following opt
 ### Example schema
 
 [See the example schmea](http://github.com/anicholls/sketch-lint/master/schema.json.example)
+
+## Supported properties
+
+The following are properties you can specify in the `output` attribute of a SchemaObject.
+
+### `width`
+```json
+{
+  "width": 100
+}
+```
+
+### `height`
+```json
+{
+  "height": 100
+}
+```
+
+### `x`
+```json
+{
+  "x": 100
+}
+```
+
+### `y`
+```json
+{
+  "y": 100
+}
+```
+
+### `rotation`
+
+```json
+{
+  "rotation": -10
+}
+```
+
+### `shadows`
+
+```json
+{
+  "shadows": {
+    "blurRadius": 4,
+    "color": {
+      "alpha": 0.5,
+      "blue": 0,
+      "green": 0,
+      "red": 0
+    },
+    "offsetX": 0,
+    "offsetY": 2,
+    "spread": 0
+  }
+}
+```
+
+### `innerShadows`
+
+```json
+{
+  "innerShadows": {
+    "blurRadius": 3,
+    "color": {
+      "alpha": 0.5,
+      "blue": 0,
+      "green": 0,
+      "red": 0
+    },
+    "offsetX": 0,
+    "offsetY": 1,
+    "spread": 0
+  }
+}
+```
+
+### `borders`
+
+```json
+{
+  "borders": [
+    {
+      "color": {
+        "alpha": 1,
+        "blue": 0.592,
+        "green": 0.592,
+        "red": 0.592
+      },
+      "fillType": 0,
+      "position": 1,
+      "thickness": 1
+    }
+  ]
+}
+```
+
+### `fills`
+
+Note: Only gradients and solid fills supported
+
+```json
+{
+  fills: [
+    {
+      "color": {
+        "alpha": 1,
+        "blue": 0.847,
+        "green": 0.847,
+        "red": 0.847
+      },
+    },
+    {
+      "gradient": {
+        "from": "{0.5, 0}",
+        "stops": [
+          {
+            "color": {
+              "alpha": 0.5,
+              "blue": 0,
+              "green": 0,
+              "red": 1
+            },
+            "position": 0
+          },
+          {
+            "color": {
+              "alpha": 0.5,
+              "blue": 0,
+              "green": 0,
+              "red": 0
+            },
+            "position": 1
+          }
+        ],
+        "to": "{0.5, 1}"
+      },
+    }
+  ]
+}
+```

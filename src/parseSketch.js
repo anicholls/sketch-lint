@@ -1,5 +1,6 @@
 const fs = require('fs');
 const JSZip = require('jszip');
+const getProperties = require('./properties');
 
 var schema;
 var pages = [];
@@ -118,7 +119,7 @@ function validateSketchObject(obj, schemas, stack) {
         page: localStack.pageName,
         layerPath: localStack.layerPath,
         name: obj.name,
-        properties: parseProperties(obj, schema.output)
+        properties: getProperties(obj, schema.output)
       }
       output.push(objOutput);
     }
@@ -152,18 +153,6 @@ function validateSketchObject(obj, schemas, stack) {
   }
 
   return localStack;
-}
-
-function parseProperties(obj, properties) {
-  let objOutput = {};
-  for (let property of properties) {
-    if (property == 'fills.color') {
-      let color = obj.style.fills[0].color;
-      delete color['_class'];
-      objOutput[property] = obj.style.fills[0].color;
-    }
-  }
-  return objOutput;
 }
 
 module.exports = parseSketch;
