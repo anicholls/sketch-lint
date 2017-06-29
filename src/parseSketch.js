@@ -23,17 +23,7 @@ function parseSketch(schemaJson, result) {
 
     checkPage(page.name, page.layers);
 
-
-    const outputJson = JSON.stringify(output, null, 2);
-
-    fs.writeFile("output.json", outputJson, (err) => {
-      if (err) {
-        return console.log(err);
-      }
-      else {
-        console.log('Property output saved to "output.json"');
-      }
-    });
+    writeOutput();
 
     //reportErrors(page.name);
   }
@@ -114,7 +104,6 @@ function validateSketchObject(obj, schemas, stack) {
     }
 
     if (schema.output) {
-      // Copy stack for use in output
       let objOutput = {
         page: localStack.pageName,
         layerPath: localStack.layerPath,
@@ -131,6 +120,7 @@ function validateSketchObject(obj, schemas, stack) {
       localStack['layerPath'].push(obj.name);
     }
 
+    // If there are nested layers, validate the children
     if (obj.layers && schema.layers) {
       for (let layer of obj.layers) {
         let childStack = validateSketchObject(layer, schema.layers, localStack);
@@ -153,6 +143,23 @@ function validateSketchObject(obj, schemas, stack) {
   }
 
   return localStack;
+}
+
+function writeOutput() {
+  if (output && !schema.outputLocation) {
+    console.log('Output location required in schema to output (i.e. "outputLocation": "./output.json"');
+  }
+
+  const outputJson = JSON.stringify(output, null, 2);
+
+  fs.writeFile(schema.outputLocation, outputJson, (err) => {
+    if (err) {
+      return console.log(err);
+    }
+    else {
+      console.log('Style property output saved to "' + schema.outputLocation + '"');
+    }
+  });
 }
 
 module.exports = parseSketch;
