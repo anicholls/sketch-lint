@@ -22,7 +22,8 @@ class SketchObject {
   }
 
   /*
-   * Takes an object and compares it to an array of possible schemas.
+   * Recursively validates the object and it's children by
+   * comparing it to an array of possible schemas.
    * When it finds a match, it continues to traverse down the tree.
    * If it doesn't find a match, an error is recorded.
    */
@@ -59,44 +60,11 @@ class SketchObject {
         }
       }
 
-      // Need a pattern to track the count
-      if (schema.pattern && schema.count) {
-        if (stack.counts[schema.pattern]) {
-          stack.counts[schema.pattern].value++;
-        } else {
-          stack.counts[schema.pattern] = {
-            expected: schema.count,
-            value: 1
-          };
-        }
-      }
+      this._incrementCount(schema.pattern, schema.count, localStack);
 
-      if (schema.output) {
-        let objOutput = {
-          page: localStack.pageName,
-          layerPath: localStack.layerPath,
-          name: this.name,
-          properties: getProperties(this, schema.output)
-        }
-        this.output.push(objOutput);
-      }
+      this._output(schema.output, localStack);
 
-      // Add the object to the stack
-      if (this.class == 'artboard' && !localStack.artboard) {
-        localStack['artboard'] = this.name;
-      } else {
-        localStack['layerPath'].push(this.name);
-      }
-
-      // If there are nested layers, validate the children
-      if (this.layers && schema.layers) {
-        for (let layer of this.layers) {
-          let childStack = layer.validate(schema.layers, localStack);
-
-          // Get the updated count values from the recursive call and combine them into one object
-          localStack.counts = Object.assign({}, localStack.counts, childStack.counts);
-        }
-      }
+      localStack = this._validateChildren(localStack);
     }
 
     // TODO: Separate errors by page
@@ -111,6 +79,53 @@ class SketchObject {
     }
 
     return localStack;
+  }
+
+  _incrementCount(pattern, count, stack) {
+      // Need a pattern to track the count
+      if (pattern && count) {
+        if (stack.counts[pattern]) {
+          stack.counts[pattern].value++;
+        } else {
+          stack.counts[pattern] = {
+            expected: count,
+            value: 1
+          };
+        }
+      }
+  }
+
+  _output(outputProps, stack) {
+    if (outputProps) {
+      let objOutput = {
+        page: stack.pageName,
+        layerPath: stack.layerPath,
+        name: this.name,
+        properties: getProperties(this, outputProps)
+      }
+      this.output.push(objOutput);
+    }
+  }
+
+  _validateChildren(stack) {
+    // Add the object to the stack
+    if (this.class == 'artboard' && !stack.artboard) {
+      stack['artboard'] = this.name;
+    } else {
+      stack['layerPath'].push(this.name);
+    }
+
+    // If there are nested layers, validate the children
+    if (this.layers && schema.layers) {
+      for (let layer of this.layers) {
+        let childStack = layer.validate(schema.layers, stack);
+
+        // Get the updated count values from the recursive call and combine them into one object
+        stack.counts = Object.assign({}, stack.counts, childStack.counts);
+      }
+    }
+
+    return stack;
   }
 }
 

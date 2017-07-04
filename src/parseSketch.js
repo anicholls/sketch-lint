@@ -41,6 +41,7 @@ function checkPage(pageName, artboards) {
 
     obj = new SketchObject(artboard, output);
 
+    // Recursively validate all objects in the artboard
     stack = obj.validate(schema.hierarchy, stack);
 
     for (let pattern in stack.counts) {
