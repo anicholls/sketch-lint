@@ -33,14 +33,15 @@ The `hierarchy` is made out of identical objects that can have the following opt
 - `class {string}`: This corresponds to the class used by the sketch file format (page, artboard, group, layer, rect, etc.).
 - `pattern {string}`: The regex pattern to validate the name with.
 - `count {number}`: The number of instances of the specified pattern you expect (requires `pattern`).
-- `output {array<string}`: The style properties you'd like exported for matched objects.
+- `output {array<Object>}`: The style properties you'd like to enforce for matched objects. For supported properties, see [Supported Properties](#supported-properties).
+- `output {array<string>}`: The style properties you'd like exported for matched objects. Any single value property is supported (i.e. `width`, `height`, `rotation`, etc.)
 - `layers {array<SchemaObject>}`: If you want to enforce more guidelines on children of the matched object, you can specify more rules in the layers array.
 
-### Example schema
+### Example Schema
 
 [See the example schmea](http://github.com/anicholls/sketch-lint/master/schema.json.example)
 
-## Supported properties
+## Supported Properties
 
 The following are properties you can specify in the `output` attribute of a SchemaObject.
 
