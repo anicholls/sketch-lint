@@ -42,12 +42,11 @@ class SketchObject {
     let nameValidated = !checkName;
 
     for (let schema of schemas) {
-
       if (!schema.checkClass(this.class)) {
         continue;
       }
 
-      if (checkName && !nameValidated) {
+      if (checkName) {
         if (schema.checkName(this.name)) {
           nameValidated = true;
         }
@@ -60,7 +59,7 @@ class SketchObject {
 
       this._output(schema.output, localStack);
 
-      localStack = this._validateChildren(localStack);
+      localStack = this._validateChildren(schema.layers, localStack);
     }
 
     // TODO: Separate errors by page
@@ -103,7 +102,7 @@ class SketchObject {
     }
   }
 
-  _validateChildren(stack) {
+  _validateChildren(schemas, stack) {
     // Add the object to the stack
     if (this.class == 'artboard' && !stack.artboard) {
       stack['artboard'] = this.name;
@@ -112,9 +111,9 @@ class SketchObject {
     }
 
     // If there are nested layers, validate the children
-    if (this.layers && schema.layers) {
+    if (this.layers && schemas.length) {
       for (let layer of this.layers) {
-        let childStack = layer.validate(schema.layers, stack);
+        let childStack = layer.validate(schemas, stack);
 
         // Get the updated count values from the recursive call and combine them into one object
         stack.counts = Object.assign({}, stack.counts, childStack.counts);

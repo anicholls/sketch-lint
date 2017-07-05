@@ -2,7 +2,7 @@ class SchemaObject {
   constructor(json) {
     this.class = json['class'];
     this.pattern = json['pattern'];
-    this.count = json['output'];
+    this.count = json['count'];
 
     let layers = [];
     if (json['layers']) {
@@ -19,12 +19,12 @@ class SchemaObject {
      */
   }
 
-  checkClass(class) {
-    if (!this.class) {
+  checkClass(cls) {
+    if (!this.cls) {
       return true;
     }
 
-    return this.class === class;
+    return this.class === cls;
   }
 
   checkName(name) {
@@ -32,8 +32,8 @@ class SchemaObject {
       return true;
     }
 
-    let regex = new RegExp(schema.pattern, "g");
-    return regex.test(this.name);
+    let regex = new RegExp(this.pattern, "g");
+    return regex.test(name);
   }
 }
 

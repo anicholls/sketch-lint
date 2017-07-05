@@ -3,12 +3,17 @@ const JSZip = require('jszip');
 const SketchObject = require('./SketchObject');
 const SchemaObject = require('./SchemaObject');
 
-var schema;
+var options;
 var errors = {};
 var output = [];
 
-function parseSketch(schemaJson, result) {
-  schema = schemaJson;
+function parseSketch(optionsJson, result) {
+  options = optionsJson;
+  let schemas = [];
+
+  for (let schema of options.hierarchy) {
+    schemas.push(new SchemaObject(schema));
+  }
 
   let pages = result.pages;
   for (var id in pages) {
@@ -20,7 +25,7 @@ function parseSketch(schemaJson, result) {
 
     errors[page.name] = [];
 
-    checkPage(page.name, page.layers);
+    checkPage(schemas, page.name, page.layers);
 
     writeOutput();
 
@@ -30,7 +35,7 @@ function parseSketch(schemaJson, result) {
   return result;
 }
 
-function checkPage(pageName, artboards) {
+function checkPage(schemas, pageName, artboards) {
   for (var artboard of artboards) {
 
     // TODO: Move stack initialization to SketchObject constructor
@@ -44,7 +49,7 @@ function checkPage(pageName, artboards) {
     obj = new SketchObject(artboard, output);
 
     // Recursively validate all objects in the artboard
-    stack = obj.validate(schema.hierarchy, stack);
+    stack = obj.validate(schemas, stack);
 
     for (let pattern in stack.counts) {
       let count = stack.counts[pattern];
@@ -59,18 +64,18 @@ function checkPage(pageName, artboards) {
 
 
 function writeOutput() {
-  if (output && !schema.outputLocation) {
+  if (output && !options.outputLocation) {
     console.log('Output location required in schema to output (i.e. "outputLocation": "./output.json"');
   }
 
   const outputJson = JSON.stringify(output, null, 2);
 
-  fs.writeFile(schema.outputLocation, outputJson, (err) => {
+  fs.writeFile(options.outputLocation, outputJson, (err) => {
     if (err) {
       return console.log(err);
     }
     else {
-      console.log('Style property output saved to "' + schema.outputLocation + '"');
+      console.log('Style property output saved to "' + options.outputLocation + '"');
     }
   });
 }
