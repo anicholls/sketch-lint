@@ -15,7 +15,25 @@ class SchemaObject {
     /* TODO:
      * - Check there are no other keys
      * - Check pattern if count
+     * - Add support for pattern to be string OR list
      */
+  }
+
+  checkClass(class) {
+    if (!this.class) {
+      return true;
+    }
+
+    return this.class === class;
+  }
+
+  checkName(name) {
+    if (!this.pattern) {
+      return true;
+    }
+
+    let regex = new RegExp(schema.pattern, "g");
+    return regex.test(this.name);
   }
 }
 

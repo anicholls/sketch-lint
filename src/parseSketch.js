@@ -33,6 +33,8 @@ function parseSketch(schemaJson, result) {
 function checkPage(pageName, artboards) {
   for (var artboard of artboards) {
 
+    // TODO: Move stack initialization to SketchObject constructor
+    // so we don't have to pass it in on validate
     var stack = {
       page: pageName,
       layerPath: [],

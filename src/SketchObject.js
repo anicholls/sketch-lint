@@ -36,26 +36,22 @@ class SketchObject {
     let localStack = JSON.parse(JSON.stringify(stack));
 
     // If none of the schema's have a `pattern` key, don't check names
-    let checkName = schemas.some((o) => {
+    let checkName = schemas.every((o) => {
       return 'pattern' in o;
     });
     let nameValidated = !checkName;
 
-    // TODO: Add support for schema.pattern to be string OR list
-
     for (let schema of schemas) {
 
-      // If it passes this check, the obj has the right class
-      if (schema.class && this.class != schema.class) {
+      if (!schema.checkClass(this.class)) {
         continue;
       }
 
-      // If it passes this check, the obj name matches the pattern
-      if (checkName && schema.pattern) {
-        let regex = new RegExp(schema.pattern, "g");
-        if (regex.test(this.name)) {
+      if (checkName && !nameValidated) {
+        if (schema.checkName(this.name)) {
           nameValidated = true;
-        } else {
+        }
+        else {
           continue;
         }
       }

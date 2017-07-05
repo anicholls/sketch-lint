@@ -31,7 +31,7 @@ Sketch-tool owes it's power to the JSON schema it uses to validate artboards and
 The `hierarchy` is made out of identical objects that can have the following optional keys. All of the keys are optional and can be included or ommitted depending on how strict you want your linting to be.
 
 - `class {string}`: This corresponds to the class used by the sketch file format (page, artboard, group, layer, rect, etc.).
-- `pattern {string}`: The regex pattern to validate the name with.
+- `pattern {string}`: The regex pattern to validate the name with. *Note:* names will only be tested if every sibling has a pattern.
 - `count {number}`: The number of instances of the specified pattern you expect (requires `pattern`).
 - `output {array<Object>}`: The style properties you'd like to enforce for matched objects. For supported properties, see [Supported Properties](#supported-properties).
 - `output {array<string>}`: The style properties you'd like exported for matched objects. Any single value property is supported (i.e. `width`, `height`, `rotation`, etc.)
