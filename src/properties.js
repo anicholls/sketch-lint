@@ -32,6 +32,9 @@ function getProperties(obj, properties) {
       case 'fills':
         getter = getFills;
         break;
+      case 'isVisible':
+        getter = getVisible;
+        break;
 
       default:
         console.log('Property: "' + property + '" not supported.');
@@ -127,6 +130,10 @@ function getFills(obj) {
   }
 
   return fills;
+}
+
+function getVisible(obj) {
+  return obj.isVisible;
 }
 
 module.exports = getProperties;

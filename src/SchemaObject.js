@@ -47,7 +47,7 @@ class SchemaObject {
 
     let properties = getProperties(object, assertedProps);
 
-    // TODO: Add support for asserting visibility
+    let pass = true;
 
     for (let property in this.assert) {
       let expectedValue = this.assert[property];
@@ -64,14 +64,14 @@ class SchemaObject {
       }
 
       if (expectedValue != value) {
-        console.log('Incorrect ' + property + ' for layer: "' + object.name + '"');
+        console.log('Incorrect "' + property + '" property for layer: "' + object.name + '"');
         console.log('Found: ' + value);
         console.log('Expected: ' + expectedValue + '\n');
-        return false;
+        pass = false;
       }
     }
 
-    return true;
+    return pass;
   }
 }
 
