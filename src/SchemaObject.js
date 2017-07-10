@@ -1,8 +1,11 @@
+const getProperties = require('./properties');
+
 class SchemaObject {
   constructor(json) {
     this.class = json['class'];
     this.pattern = json['pattern'];
     this.count = json['count'];
+    this.assert = json['assert'];
 
     let layers = [];
     if (json['layers']) {
@@ -34,6 +37,41 @@ class SchemaObject {
 
     let regex = new RegExp(this.pattern, "g");
     return regex.test(name);
+  }
+
+  checkAssert(object) {
+    if (!this.assert) {
+      return true;
+    }
+    let assertedProps = Object.keys(this.assert);
+
+    let properties = getProperties(object, assertedProps);
+
+    // TODO: Add support for asserting visibility
+
+    for (let property in this.assert) {
+      let expectedValue = this.assert[property];
+      let value = properties[property];
+
+      // Rotations are backwards
+      if (property == 'rotation') {
+        value = value * -1;
+      }
+
+      // Some values are unset if they are zero (i.e. rotation)
+      if (expectedValue == 0 && value == undefined) {
+        continue;
+      }
+
+      if (expectedValue != value) {
+        console.log('Incorrect ' + property + ' for layer: "' + object.name + '"');
+        console.log('Found: ' + value);
+        console.log('Expected: ' + expectedValue + '\n');
+        return false;
+      }
+    }
+
+    return true;
   }
 }
 

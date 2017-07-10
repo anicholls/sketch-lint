@@ -6,6 +6,7 @@ class SketchObject {
     this.class = json['_class'];
     this.style = json['style'];
     this.frame = json['frame'];
+    this.json = json;
     this.output = output;
 
     let layers = [];
@@ -53,6 +54,11 @@ class SketchObject {
         else {
           continue;
         }
+      }
+
+      // TODO: Clean up so we don't need to store the full json
+      if (!schema.checkAssert(this.json, this.frame)) {
+        continue;
       }
 
       this._incrementCount(schema.pattern, schema.count, localStack);
