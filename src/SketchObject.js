@@ -1,18 +1,19 @@
 const getProperties = require('./properties');
 
 class SketchObject {
-  constructor(json, output) {
+  constructor(json, output, errorHandler) {
     this.name = json['name'];
     this.class = json['_class'];
     this.style = json['style'];
     this.frame = json['frame'];
     this.json = json;
     this.output = output;
+    this.errorHandler = errorHandler;
 
     let layers = [];
     if (json['layers']) {
       for (let layer of json['layers']) {
-        layers.push(new SketchObject(layer, output));
+        layers.push(new SketchObject(layer, output, errorHandler));
       }
     }
     this.layers = layers;
@@ -74,9 +75,8 @@ class SketchObject {
       for (let schema of schemas) {
         patterns.push(schema.pattern);
       }
-      console.log('Incorrect ' + this.class + ' name: "' + this.name +
-          '" in artboard: "' + stack.artboard + '"');
-      console.log('Expected format(s): "' + patterns.join('", "') + '"\n');
+
+      this.errorHandler.addError(this.class, 'name', this.name, patterns);
     }
 
     return localStack;

@@ -1,16 +1,17 @@
 const getProperties = require('./properties');
 
 class SchemaObject {
-  constructor(json) {
+  constructor(json, errorHandler) {
     this.class = json['class'];
     this.pattern = json['pattern'];
     this.count = json['count'];
     this.assert = json['assert'];
+    this.errorHandler = errorHandler;
 
     let layers = [];
     if (json['layers']) {
       for (let layer of json['layers']) {
-        layers.push(new SchemaObject(layer));
+        layers.push(new SchemaObject(layer, errorHandler));
       }
     }
     this.layers = layers;
@@ -64,9 +65,9 @@ class SchemaObject {
       }
 
       if (expectedValue != value) {
-        console.log('Incorrect "' + property + '" property for layer: "' + object.name + '"');
-        console.log('Found: ' + value);
-        console.log('Expected: ' + expectedValue + '\n');
+        let error = this.errorHandler.addError(property, 'property', value, expectedValue);
+        error.setContext(object.name);
+
         pass = false;
       }
     }
