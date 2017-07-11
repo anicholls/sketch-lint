@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const commandLineArgs = require('command-line-args');
 const getUsage = require('command-line-usage');
 const handleFiles = require('./src/handleFiles');

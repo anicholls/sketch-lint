@@ -15,6 +15,21 @@ Future features:
 
 - **Export** artboards and layers with cutsomizable export parameters.
 
+## Installation
+
+1. Clone the repo and navigate into it
+1. Run `npm install -g`
+
+## Usage
+
+```bash
+sketch-lint -s ./schema.json -i ./design.sketch
+```
+
+- `-h, --help`            Display the usage guide
+- `-s, --schema {file}`   The JSON schema to define the linting
+- `-i, --input {file}`    The input .sketch file
+
 ## Schema
 
 Sketch-lint owes it's power to the JSON schema it uses to validate artboards and layers. The schema looks like this:

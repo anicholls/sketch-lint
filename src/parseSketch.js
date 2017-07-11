@@ -53,8 +53,8 @@ function checkPage(schemas, pageName, artboards) {
 
     for (let pattern in stack.counts) {
       let count = stack.counts[pattern];
-      if (count.value != count.expected) {
 
+      if (count.value != count.expected) {
         let error = new CountError(pattern, count.value, count.expected);
         error.setContext(pageName, artboard.name);
         errorHandler.addError(error);

@@ -19,9 +19,7 @@ class SketchObject {
     }
     this.layers = layers;
 
-    /* TODO:
-     * - Assert necessary vars exist
-     */
+    //TODO: Assert necessary vars exist
   }
 
   /*
@@ -70,7 +68,6 @@ class SketchObject {
       localStack = this._validateChildren(schema.layers, localStack);
     }
 
-    // TODO: Separate errors by page
     if (!nameValidated) {
       let patterns = [];
       for (let schema of schemas) {

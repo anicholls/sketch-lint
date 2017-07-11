@@ -23,5 +23,8 @@
     "fs": "0.0.1-security",
     "jszip": "^3.1.3",
     "sketch2json": "^0.1.0"
+  },
+  "bin": {
+    "sketch-lint": "./index.js"
   }
 }
