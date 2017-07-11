@@ -179,7 +179,7 @@ Note: Only gradients and solid fills supported
 
 ```json
 {
-  fills: [
+  "fills": [
     {
       "color": {
         "alpha": 1,
