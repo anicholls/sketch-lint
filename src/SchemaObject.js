@@ -1,4 +1,5 @@
 const getProperties = require('./properties');
+const { PropertyError } = require('./SketchError');
 
 class SchemaObject {
   constructor(json, errorHandler) {
@@ -40,7 +41,7 @@ class SchemaObject {
     return regex.test(name);
   }
 
-  checkAssert(object) {
+  checkAssert(object, stack) {
     if (!this.assert) {
       return true;
     }
@@ -65,8 +66,9 @@ class SchemaObject {
       }
 
       if (expectedValue != value) {
-        let error = this.errorHandler.addError(property, 'property', value, expectedValue);
-        error.setContext(object.name);
+        let error = new PropertyError(property, value, expectedValue)
+        error.setContext(stack.page, stack.artboard, object.name);
+        this.errorHandler.addError(error);
 
         pass = false;
       }

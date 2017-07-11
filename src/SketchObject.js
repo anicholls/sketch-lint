@@ -1,4 +1,5 @@
 const getProperties = require('./properties');
+const { NameError } = require('./SketchError');
 
 class SketchObject {
   constructor(json, output, errorHandler) {
@@ -58,7 +59,7 @@ class SketchObject {
       }
 
       // TODO: Clean up so we don't need to store the full json
-      if (!schema.checkAssert(this.json, this.frame)) {
+      if (!schema.checkAssert(this.json, localStack)) {
         continue;
       }
 
@@ -76,7 +77,9 @@ class SketchObject {
         patterns.push(schema.pattern);
       }
 
-      this.errorHandler.addError(this.class, 'name', this.name, patterns);
+      let error = new NameError(this.class, this.name, patterns);
+      error.setContext(stack.page, stack.artboard);
+      this.errorHandler.addError(error);
     }
 
     return localStack;

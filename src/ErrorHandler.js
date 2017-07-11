@@ -1,25 +1,24 @@
-const SketchError = require('./SketchError');
-
 class ErrorHandler {
   constructor() {
     this.errors = [];
   }
 
-  // TODO: Add second version of addError that accepts an error itself
-
-  addError(objClass, type, value, expected) {
-    let error = new SketchError(objClass, type, value, expected);
+  addError(error) {
     this.errors.push(error);
-
-    return error;
   }
 
   output() {
     for (let error of this.errors) {
-      let msg = error.getMessage() + '\n';
-      console.log(msg);
+      console.log(error.constructor.name);
+      console.log(_divider());
+      console.log(error.getMessage());
+      console.log(_divider() + '\n');
     }
   }
+}
+
+function _divider() {
+  return '-'.repeat(20);
 }
 
 module.exports = ErrorHandler;

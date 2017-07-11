@@ -3,9 +3,9 @@ const JSZip = require('jszip');
 const ErrorHandler = require('./ErrorHandler');
 const SketchObject = require('./SketchObject');
 const SchemaObject = require('./SchemaObject');
+const { CountError } = require('./SketchError');
 
 var options;
-var errors = {};
 var output = [];
 var errorHandler = new ErrorHandler();
 
@@ -25,23 +25,11 @@ function parseSketch(optionsJson, result) {
       continue;
     }
 
-    errors[page.name] = [];
-
     checkPage(schemas, page.name, page.layers);
 
     errorHandler.output();
 
     writeOutput();
-
-    //reportErrors(page.name);
-
-    /* TODO (ERRORS):
-     - build an ErrorHelper class
-     - Instantiate ErrorHelper here
-     - Pass ErrorHelper to the constructors of SketchObject and SchemaObject
-     - SketchObject or SchemaObject can push errors onto the ErrorHelper using helper fns
-     - Add a call to sort and output errors (fn on ErrorHelper)
-     */
   }
 
   return result;
@@ -66,10 +54,10 @@ function checkPage(schemas, pageName, artboards) {
     for (let pattern in stack.counts) {
       let count = stack.counts[pattern];
       if (count.value != count.expected) {
-        // console.log('Invalid count for: "' + pattern + '" in artboard: "' + artboard.name + '"');
-        // console.log('Found: ' + count.value);
-        // console.log('Expected: ' + count.expected + '\n');
-        console.log('here');
+
+        let error = new CountError(pattern, count.value, count.expected);
+        error.setContext(pageName, artboard.name);
+        errorHandler.addError(error);
       }
     }
   }
