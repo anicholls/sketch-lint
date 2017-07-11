@@ -59,7 +59,7 @@ class CountError extends SketchError {
   getMessage() {
     let msg = colors.desc('Incorrect count of pattern\n\n');
     msg += this.getContextOutput();
-    msg += 'Pattern: "' +  colors.value(this.name) + '"\n';
+    msg += 'Pattern: "' +  colors.value(this.pattern) + '"\n';
     msg += 'Found: ' + colors.value(this.value) + '\n';
     msg += 'Expected: ' + colors.value(this.expected);
 
