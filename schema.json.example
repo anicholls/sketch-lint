@@ -12,10 +12,16 @@
             {
               "pattern": "^100$",
               "count": "1",
+              "assert": {
+                "rotation": "0",
+                "width": "220",
+                "height": "80",
+                "isVisible": "true"
+              },
               "output": ["fills.color"]
             },
             {
-              "pattern": "^test-pattern$",
+              "pattern": "^200$",
               "count": "1",
               "output": ["fills.color"]
             },
@@ -34,11 +40,6 @@
               "count": "1",
               "output": ["fills.color"]
             },
-            {
-              "pattern": "^600$",
-              "count": "1",
-              "output": ["fills.color"]
-            }
           ]
         }
       ]
