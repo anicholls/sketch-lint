@@ -1,3 +1,5 @@
+var colors = require('colors');
+
 class ErrorHandler {
   constructor() {
     this.errors = [];
@@ -9,8 +11,7 @@ class ErrorHandler {
 
   output() {
     for (let error of this.errors) {
-      console.log(error.constructor.name);
-      console.log(_divider());
+      console.log(error.constructor.name.red + ':');
       console.log(error.getMessage());
       console.log(_divider() + '\n');
     }

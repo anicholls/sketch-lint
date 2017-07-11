@@ -1,24 +1,10 @@
-//   getMessage() {
-//     let msg = '---------------------\n'
-//     let expected = (typeof this.expected ==  Array) ?
-//         this.expected.join('", "') : this.expected;
+var colors = require('colors');
 
-//     let order = {
-//       'Layer Name': this.layer,
-//       'Artboard Name': this.artboard,
-//       'Page Name': this.page,
-//       'Descriptor': this.descriptor,
-//       'Value': this.value,
-//       'Expected': this.expected
-//     }
-
-//     msg += 'SketchError (' + this.type + '):\n';
-
-//     for (let param in order) {
-//       if (order[param]) {
-//         msg += param + ': ' + order[param] + '\n';
-//       }
-//     }
+colors.setTheme({
+  value: 'yellow',
+  context: 'cyan',
+  desc: 'italic'
+});
 
 class SketchError {
   setContext(page, artboard, layer) {
@@ -31,13 +17,13 @@ class SketchError {
     let context = '';
 
     if (this.page) {
-      context += 'Page: ' + this.page + '\n';
+      context += 'Page: ' + colors.context(this.page) + '\n';
     }
     if (this.artboard) {
-      context += 'Artboard: ' + this.artboard + '\n';
+      context += 'Artboard: ' + colors.context(this.artboard) + '\n';
     }
     if (this.layer) {
-      context += 'Layer: ' + this.layer + '\n';
+      context += 'Layer: ' + colors.context(this.layer) + '\n';
     }
 
     return context;
@@ -53,9 +39,10 @@ class NameError extends SketchError {
   }
 
   getMessage() {
-    let msg = this.getContextOutput();
-    msg += 'Incorrect ' + this.class + ' name: "' + this.value + '"\n';
-    msg += 'Expected format(s): "' + this.expected + '"';
+    let msg = colors.desc('Incorrect ' + this.class + ' name\n\n');
+    msg += this.getContextOutput();
+    msg += 'Found: "' + colors.value(this.value) + '"\n';
+    msg += 'Expected format(s): "' + colors.value(this.expected) + '"';
 
     return msg;
   }
@@ -70,10 +57,11 @@ class CountError extends SketchError {
   }
 
   getMessage() {
-    let msg = this.getContextOutput();
-    msg += 'The count of the pattern "' + this.name + '" did not match the spec.\n';
-    msg += 'Found: ' + this.value + '\n';
-    msg += 'Expected: ' + this.expected;
+    let msg = colors.desc('Incorrect count of pattern\n\n');
+    msg += this.getContextOutput();
+    msg += 'Pattern: "' +  colors.value(this.name) + '"\n';
+    msg += 'Found: ' + colors.value(this.value) + '\n';
+    msg += 'Expected: ' + colors.value(this.expected);
 
     return msg;
   }
@@ -88,10 +76,11 @@ class PropertyError extends SketchError {
   }
 
   getMessage() {
-    let msg = this.getContextOutput();
-    msg += 'Incorrect "' + this.property + '" property\n';
-    msg += 'Found: ' + this.value + '\n';
-    msg += 'Expected: ' + this.expected;
+    let msg = colors.desc('Incorrect property value\n\n');
+    msg += this.getContextOutput();
+    msg += 'Property: "' + colors.value(this.property) + '"\n';
+    msg += 'Found: ' + colors.value(this.value) + '\n';
+    msg += 'Expected: ' + colors.value(this.expected);
 
     return msg;
   }
