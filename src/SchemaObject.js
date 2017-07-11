@@ -1,16 +1,18 @@
 const getProperties = require('./properties');
+const { PropertyError } = require('./SketchError');
 
 class SchemaObject {
-  constructor(json) {
+  constructor(json, errorHandler) {
     this.class = json['class'];
     this.pattern = json['pattern'];
     this.count = json['count'];
     this.assert = json['assert'];
+    this.errorHandler = errorHandler;
 
     let layers = [];
     if (json['layers']) {
       for (let layer of json['layers']) {
-        layers.push(new SchemaObject(layer));
+        layers.push(new SchemaObject(layer, errorHandler));
       }
     }
     this.layers = layers;
@@ -39,7 +41,7 @@ class SchemaObject {
     return regex.test(name);
   }
 
-  checkAssert(object) {
+  checkAssert(object, stack) {
     if (!this.assert) {
       return true;
     }
@@ -64,9 +66,10 @@ class SchemaObject {
       }
 
       if (expectedValue != value) {
-        console.log('Incorrect "' + property + '" property for layer: "' + object.name + '"');
-        console.log('Found: ' + value);
-        console.log('Expected: ' + expectedValue + '\n');
+        let error = new PropertyError(property, value, expectedValue)
+        error.setContext(stack.page, stack.artboard, object.name);
+        this.errorHandler.addError(error);
+
         pass = false;
       }
     }

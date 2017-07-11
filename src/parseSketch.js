@@ -1,18 +1,20 @@
 const fs = require('fs');
 const JSZip = require('jszip');
+const ErrorHandler = require('./ErrorHandler');
 const SketchObject = require('./SketchObject');
 const SchemaObject = require('./SchemaObject');
+const { CountError } = require('./SketchError');
 
 var options;
-var errors = {};
 var output = [];
+var errorHandler = new ErrorHandler();
 
 function parseSketch(optionsJson, result) {
   options = optionsJson;
   let schemas = [];
 
   for (let schema of options.hierarchy) {
-    schemas.push(new SchemaObject(schema));
+    schemas.push(new SchemaObject(schema, errorHandler));
   }
 
   let pages = result.pages;
@@ -23,13 +25,11 @@ function parseSketch(optionsJson, result) {
       continue;
     }
 
-    errors[page.name] = [];
-
     checkPage(schemas, page.name, page.layers);
 
-    writeOutput();
+    errorHandler.output();
 
-    //reportErrors(page.name);
+    writeOutput();
   }
 
   return result;
@@ -46,7 +46,7 @@ function checkPage(schemas, pageName, artboards) {
       counts: {}
     }
 
-    obj = new SketchObject(artboard, output);
+    obj = new SketchObject(artboard, output, errorHandler);
 
     // Recursively validate all objects in the artboard
     stack = obj.validate(schemas, stack);
@@ -54,9 +54,10 @@ function checkPage(schemas, pageName, artboards) {
     for (let pattern in stack.counts) {
       let count = stack.counts[pattern];
       if (count.value != count.expected) {
-        console.log('Invalid count for: "' + pattern + '" in artboard: "' + artboard.name + '"');
-        console.log('Found: ' + count.value);
-        console.log('Expected: ' + count.expected + '\n');
+
+        let error = new CountError(pattern, count.value, count.expected);
+        error.setContext(pageName, artboard.name);
+        errorHandler.addError(error);
       }
     }
   }

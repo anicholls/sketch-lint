@@ -1,18 +1,20 @@
 const getProperties = require('./properties');
+const { NameError } = require('./SketchError');
 
 class SketchObject {
-  constructor(json, output) {
+  constructor(json, output, errorHandler) {
     this.name = json['name'];
     this.class = json['_class'];
     this.style = json['style'];
     this.frame = json['frame'];
     this.json = json;
     this.output = output;
+    this.errorHandler = errorHandler;
 
     let layers = [];
     if (json['layers']) {
       for (let layer of json['layers']) {
-        layers.push(new SketchObject(layer, output));
+        layers.push(new SketchObject(layer, output, errorHandler));
       }
     }
     this.layers = layers;
@@ -57,7 +59,7 @@ class SketchObject {
       }
 
       // TODO: Clean up so we don't need to store the full json
-      if (!schema.checkAssert(this.json, this.frame)) {
+      if (!schema.checkAssert(this.json, localStack)) {
         continue;
       }
 
@@ -74,9 +76,10 @@ class SketchObject {
       for (let schema of schemas) {
         patterns.push(schema.pattern);
       }
-      console.log('Incorrect ' + this.class + ' name: "' + this.name +
-          '" in artboard: "' + stack.artboard + '"');
-      console.log('Expected format(s): "' + patterns.join('", "') + '"\n');
+
+      let error = new NameError(this.class, this.name, patterns);
+      error.setContext(stack.page, stack.artboard);
+      this.errorHandler.addError(error);
     }
 
     return localStack;
